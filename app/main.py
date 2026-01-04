@@ -24,7 +24,8 @@ app = FastAPI(
 # CORS Middleware - Must be added first to allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=settings.CORS_ORIGINS + ["https://lovable.dev"],
+    allow_origin_regex=r"https://.*\.lovable\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
