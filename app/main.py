@@ -31,12 +31,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Create sub-application for /v1 routes
+v1_app = FastAPI()
+
+# Apply CORS middleware to /v1 sub-application
+v1_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS + ["https://lovable.dev"],
+    allow_origin_regex=r"https://.*\.lovable\.app",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include v1 routes in sub-application
+# Note: The routers have /v1 prefix, but when included in a sub-app mounted at /v1,
+# FastAPI will handle the routing. The sub-app's CORS middleware will apply to /v1/* requests.
+# We include the routers here so CORS applies, and also in main app for original paths.
+v1_app.include_router(chat_router)
+v1_app.include_router(models_router)
+
+# Mount v1 sub-application at /v1
+app.mount("/v1", v1_app)
+
+# Include v1 routes in main app to maintain original paths
+app.include_router(chat_router)
+app.include_router(models_router)
+
+# Include non-v1 routes in main app
 app.include_router(health_router)
 app.include_router(protected_router)
-app.include_router(chat_router)
 app.include_router(admin_router)
 app.include_router(account_router)
-app.include_router(models_router)
 app.include_router(auth_router)
 app.include_router(api_keys_router)
 app.include_router(status_router)
